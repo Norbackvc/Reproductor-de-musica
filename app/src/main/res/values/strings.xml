@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Reproductor de Música</string>
+    <string name="now_playing">Reproduciendo ahora</string>
+    <string name="song_title_placeholder">Título de la canción</string>
+    <string name="artist_placeholder">Artista</string>
+    <string name="duration_placeholder">0:00</string>
+    <string name="song_icon_desc">Ícono de canción</string>
+    <string name="album_art_desc">Portada del álbum</string>
+    <string name="previous_desc">Canción anterior</string>
+    <string name="play_pause_desc">Reproducir / Pausar</string>
+    <string name="next_desc">Siguiente canción</string>
+</resources>
