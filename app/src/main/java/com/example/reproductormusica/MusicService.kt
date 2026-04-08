@@ -58,18 +58,30 @@ class MusicService : Service() {
 
         mediaPlayer?.release()
         mediaPlayer = MediaPlayer().apply {
-            setDataSource(song.path)
-            prepare()
-            start()
+            try {
+                setDataSource(song.path)
+            } catch (e: Exception) {
+                release()
+                mediaPlayer = null
+                onPlaybackStateChanged?.invoke(false)
+                return
+            }
+            setOnPreparedListener { player ->
+                player.start()
+                onSongChanged?.invoke(currentIndex)
+                onPlaybackStateChanged?.invoke(true)
+                startForeground(NOTIFICATION_ID, buildNotification(song))
+            }
+            setOnErrorListener { _, _, _ ->
+                onPlaybackStateChanged?.invoke(false)
+                true
+            }
             setOnCompletionListener {
                 onCompletion?.invoke()
                 playNext()
             }
+            prepareAsync()
         }
-
-        onSongChanged?.invoke(currentIndex)
-        onPlaybackStateChanged?.invoke(true)
-        startForeground(NOTIFICATION_ID, buildNotification(song))
     }
 
     fun togglePlayPause() {

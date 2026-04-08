@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private var musicService: MusicService? = null
     private var isBound = false
+    private var pendingSongs: List<Song>? = null
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -32,6 +33,11 @@ class MainActivity : AppCompatActivity() {
             isBound = true
             musicService?.onSongChanged = { index ->
                 runOnUiThread { adapter.setActiveSong(index) }
+            }
+            // Apply any songs that were loaded before the connection was ready
+            pendingSongs?.let { songs ->
+                musicService?.songs = songs
+                pendingSongs = null
             }
         }
 
@@ -102,16 +108,12 @@ class MainActivity : AppCompatActivity() {
         val songs = querySongs()
         adapter.submitList(songs)
 
-        // Pass song list to the service
-        val intent = Intent(this, MusicService::class.java)
-        startService(intent)
-        bindService(intent, object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-                val service = (binder as MusicService.MusicBinder).getService()
-                service.songs = songs
-            }
-            override fun onServiceDisconnected(name: ComponentName?) {}
-        }, Context.BIND_AUTO_CREATE)
+        // If service is already connected, pass songs directly; otherwise defer
+        if (musicService != null) {
+            musicService?.songs = songs
+        } else {
+            pendingSongs = songs
+        }
 
         if (songs.isEmpty()) {
             Toast.makeText(this, "No se encontraron canciones en el dispositivo", Toast.LENGTH_LONG).show()
